@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Puzzling Potions</title>
+    <style>
+      /* html, body {
+        overflow: hidden !important;
+        height: 100% !important;
+        margin: 0;
+        padding: 0;
+        background-color: 0xffffff;
+        position: fixed;
+      } */
+      html{
+          padding: 0;
+          margin: 0;
+      }
+      body{
+          box-sizing: border-box;
+          margin: 0px;
+          padding: 0px;
+          background: #000;
+          overflow: hidden;
+      }
+      body.desktop{
+          background-color: #000;
+          min-height: 100vh;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+      }
+      canvas.desktop{
+          width: auto !important;
+          max-width: fit-content !important;
+          max-height: 100vh;
+          width: 2560px !important;
+          height: 1440px !important;
+      }
+
+      @media(max-width:2188px){
+          canvas.desktop{
+              max-width: 100% !important;
+              width: unset !important;
+              height: unset !important;
+          }
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
