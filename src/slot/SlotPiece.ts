@@ -1,7 +1,12 @@
 import { Container, Sprite, Texture } from "pixi.js";
 import { SlotPosition } from "./SlotUtility";
 import { app } from '../main';
-import { resolveAndKillTweens } from "../utils/animation";
+import { registerCustomEase, resolveAndKillTweens } from "../utils/animation";
+
+/** Custom ease curve for y animation of falling pieces */
+const easeSingleBounce = registerCustomEase(
+    'M0,0,C0.14,0,0.27,0.191,0.352,0.33,0.43,0.462,0.53,0.963,0.538,1,0.546,0.985,0.672,0.83,0.778,0.83,0.888,0.83,0.993,0.983,1,1',
+);
 
 /** Default piece options */
 const defaultSlotPieceOptions = {
@@ -103,9 +108,37 @@ export class SlotPiece extends Container {
         resolveAndKillTweens(this.image);
     }
     
+    /** Lock piece interactivity, preventing mouse/touch events */
+    public lock() {
+        this.interactiveChildren = false;
+    }
+
     /** Unlock piece interactivity, preventing mouse/touch events */
     public unlock() {
         this.interactiveChildren = true;
     }
+
+    /** CHeck if piece is locked */
+    public isLocked() {
+        return !this.interactiveChildren;
+    }
+    
+    /** Pop out animation */
+    public async animateJump() {
+        this.lock();
+        resolveAndKillTweens(this.image);
+        const duration = 0.1;
+        await gsap.to(this.image, { alpha: 0, duration, ease: 'sine.out' });
+        this.visible = false;
+    }
+
+        /** Fall to position animation */
+        public async animateFall(x: number, y: number) {
+            this.lock();
+            resolveAndKillTweens(this.position);
+            const duration = 0.5;
+            await gsap.to(this.position, { x, y, duration, ease: easeSingleBounce });
+            this.unlock();
+        }
     
 }

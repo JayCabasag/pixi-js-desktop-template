@@ -1,6 +1,6 @@
 import { Container, Graphics } from "pixi.js";
 import { Slot } from "./Slot";
-import { SlotGrid, SlotPosition, SlotType, match3CreateGrid, slotForEach } from "./SlotUtility";
+import { SlotGrid, SlotPosition, SlotType, match3CreateGrid, slotForEach, slotGetPieceType } from "./SlotUtility";
 import { SlotPiece } from "./SlotPiece";
 import { SlotConfig, slotGetBlocks } from "./SlotConfig";
 import { pool } from "../utils/pool";
@@ -26,6 +26,7 @@ export class SlotBoard{
     public commonTypes: SlotType[] = [];
     /** Map piece types to piece names */
     public typesMap!: Record<number, string>;
+    
     constructor(slot: Slot) {
         this.slot = slot;
 
@@ -112,11 +113,78 @@ export class SlotBoard{
      * @param position The grid position to be converted
      * @returns The equivalet x & y position in the board
      */
-        public getViewPositionByGridPosition(position: SlotPosition) {
-            const offsetX = ((this.columns - 1) * this.tileSize) / 2;
-            const offsetY = ((this.rows - 1) * this.tileSize) / 2;
-            const x = position.column * this.tileSize - offsetX;
-            const y = position.row * this.tileSize - offsetY;
-            return { x, y };
+    public getViewPositionByGridPosition(position: SlotPosition) {
+        const offsetX = ((this.columns - 1) * this.tileSize) / 2;
+        const offsetY = ((this.rows - 1) * this.tileSize) / 2;
+        const x = position.column * this.tileSize - offsetX;
+        const y = position.row * this.tileSize - offsetY;
+        return { x, y };
+    }
+
+    /**
+     * Find a piece sprite by grid position
+     * @param position The grid position to look for
+     * @returns
+     */
+    public getPieceByPosition(position: SlotPosition) {
+        for (const piece of this.pieces) {
+            if (piece.row === position.row && piece.column === position.column) {
+                return piece;
+            }
         }
+        return null;
+    }
+
+    /**
+     * Find out the piece type in a grid position
+     * @param position
+     * @returns The type of the piece
+     */
+    public getTypeByPosition(position: SlotPosition) {
+        return slotGetPieceType(this.grid, position);
+    }
+
+
+    /**
+     * Pop a piece out of the board, triggering its effects if it is a special piece
+     * @param position The grid position of the piece to be popped out
+     * @param causedBySpecial If the pop was caused by special effect
+     */
+    public async jumpPiece(position: SlotPosition, causedBySpecial = false) {
+        const piece = this.getPieceByPosition(position);
+        const type = slotGetPieceType(this.grid, position);
+        if (!type || !piece) return;
+
+        await piece.animateJump();
+        this.disposePiece(piece);
+    }
+
+    /**
+     * Dispose a piece, removing it from the board
+     * @param piece Piece to be removed
+     */
+    public disposePiece(piece: SlotPiece) {
+        if (this.pieces.includes(piece)) {
+            this.pieces.splice(this.pieces.indexOf(piece), 1);
+        }
+        if (piece.parent) {
+            piece.parent.removeChild(piece);
+        }
+        pool.giveBack(piece);
+    }
+
+
+
+     /**
+     * Pop a list of pieces all together
+     * @param positions List of positions to be popped out
+     * @param causedBySpecial If this was caused by special effects
+     */
+     public async jumpPieces(positions: SlotPosition[], causedBySpecial = false) {
+        const animPromises = [];
+        for (const position of positions) {
+            animPromises.push(this.jumpPiece(position, causedBySpecial));
+        }
+        await Promise.all(animPromises);
+    }
 }
