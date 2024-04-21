@@ -12,6 +12,7 @@ import {
     Match3Grid,
     Match3Type,
 } from './Match3Utility';
+import gsap from 'gsap';
 
 /**
  * Holds the grid state and control its visual representation, creating and removing pieces accordingly.
@@ -39,6 +40,8 @@ export class Match3Board {
     public commonTypes: Match3Type[] = [];
     /** Map piece types to piece names */
     public typesMap!: Record<number, string>;
+    /** All Picess spin animations */
+    public spinAnimations: gsap.core.Tween[][] = [];
 
     constructor(match3: Match3) {
         this.match3 = match3;
@@ -129,6 +132,91 @@ export class Match3Board {
         this.pieces.push(piece);
         this.piecesContainer.addChild(piece);
         return piece;
+    }
+    /**
+     * Spin animations
+     */
+    public spinReels(positions: Match3Position[]){
+        const reelPiecesPositions: { [key: number]: Match3Position[] } = {};
+        positions.forEach(position => {
+            const { column } = position;
+            if (!reelPiecesPositions[column]) {
+                reelPiecesPositions[column] = [];
+            }
+            reelPiecesPositions[column].push(position);
+        });
+
+        const groupedPositionsArray: Match3Position[][] = Object.entries(reelPiecesPositions)
+            .map(([_column, positions]) => positions);
+        
+        const reelsPieces: Match3Piece[][] = [];
+        const reelsTypes: Match3Type[][] = [];
+        for (let i = 0; i < groupedPositionsArray.length; i++) {
+            reelsPieces[i] = [];
+            reelsTypes[i] = [];
+            for (let j = 0; j < groupedPositionsArray[i].length; j++) {
+                const element = groupedPositionsArray[i][j];
+                const piece = this.getPieceByPosition(element);
+                const type = this.getTypeByPosition(element);
+                if (piece && type) {
+                    reelsPieces[i][j] = piece; // Adjusted indexing here
+                    reelsTypes[i][j] = type; // Adjusted indexing here
+                }
+            }
+        }
+
+        for (let index = 0; index < reelsPieces.length; index++) {
+            const reelPieces = reelsPieces[index];
+            this.spinReel(reelPieces, groupedPositionsArray[index], index)
+        }
+    }
+    /** Singel reel Spin */
+    public async spinReel(pieces: Match3Piece[], positions: Match3Position[], index: number){
+        this.spinAnimations[index] = [];
+        gsap.to(pieces, {
+            y: `-=60`,
+            ease: 'back.out',
+            delay: index * 0.2,
+            duration: 1,
+            onComplete: () => {
+                for (let i = 0; i < pieces.length; i++) {
+                    gsap.killTweensOf(pieces[i])
+                }
+
+                for (let index = 0; index < pieces.length; index++) {
+                    const viewPosition = this.getViewPositionByGridPosition(positions[index]);
+                    pieces[index].x = viewPosition.x
+                    pieces[index].y = viewPosition.y
+                }
+
+                const { tileSize, rows } = this.match3.config
+                const wrap = gsap.utils.wrap(-tileSize, tileSize * rows);
+
+                // let spinAnimation = gsap.to(piece, {
+                //     y: `+=${tileSize * rows - 1}`,
+                //     ease: "none",
+                //     onStart: () => {
+                        
+                //     },
+                //     duration: 1,
+                //     repeat: -1,
+                //     modifiers: {
+                //         y: gsap.utils.unitize(wrap)
+                //     },
+                //     onComplete: () =>{
+                //         gsap.killTweensOf(piece);
+                //         gsap.killTweensOf(piece);
+                //     }
+                // });
+                // this.spinAnimations[index].push(spinAnimation)
+            }
+        })
+    }
+    /**
+     * Interupt Spin animations
+     */
+    public interruptSpinReels(positions: Match3Position[]){
+        console.log(positions)
     }
 
     /**

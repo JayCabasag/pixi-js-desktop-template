@@ -6,6 +6,7 @@ import {
     match3CloneGrid,
     match3SwapPieces,
     match3GetMatches,
+    slotGetGridPiecesPosition,
 } from './Match3Utility';
 
 /** Interface for actions configuration */
@@ -34,6 +35,12 @@ export class Match3Actions {
      */
     public setup(config: Match3ActionsConfig) {
         this.freeMoves = config.freeMoves;
+    }
+
+    public async actionSpin(){
+        if (!this.match3.isPlaying()) return;
+        const piecePositions: Match3Position[] = slotGetGridPiecesPosition(this.match3.board.grid);
+        this.match3.board.spinReels(piecePositions);
     }
 
     /**

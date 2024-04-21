@@ -39,8 +39,4 @@ export class Slot extends Container {
     public isPlaying() {
         return this.interactiveChildren;
     }
-
-    
-
-
 }

@@ -22,6 +22,7 @@ import { GameOvertime } from '../ui/GameOvertime';
 import { waitFor } from '../utils/asyncUtils';
 import { match3GetConfig, Match3Mode } from '../match3/Match3Config';
 import { userStats } from '../utils/userStats';
+import { LargeButton } from '../ui/LargeButton';
 
 /** The screen tha holds the Match3 game */
 export class GameScreen extends Container {
@@ -51,6 +52,8 @@ export class GameScreen extends Container {
     public readonly overtime: GameOvertime;
     /** The time's up message that shows up when gameplay finishes */
     public readonly timesUp: GameTimesUp;
+    /** Th play button */
+    public readonly playButton: LargeButton;
     /** The match3 book shelf background */
     public readonly shelf?: Shelf;
     /** The special effects layer for the match3 */
@@ -74,6 +77,10 @@ export class GameScreen extends Container {
         });
         this.settingsButton.onPress.connect(() => navigation.presentPopup(SettingsPopup));
         this.addChild(this.settingsButton);
+
+        this.playButton = new LargeButton({ text: "Start Spin" });
+        this.playButton.onPress.connect(() => this.match3.actions.actionSpin())
+        this.addChild(this.playButton)
 
         this.gameContainer = new Container();
         this.addChild(this.gameContainer);
@@ -128,7 +135,7 @@ export class GameScreen extends Container {
             columns: getUrlParamNumber('columns') ?? 7,
             tileSize: getUrlParamNumber('tileSize') ?? 50,
             freeMoves: getUrlParam('freeMoves') !== null,
-            duration: getUrlParamNumber('duration') ?? 60,
+            duration: getUrlParamNumber('duration') ?? 10000,
             mode: (getUrlParam('mode') as Match3Mode) ?? userSettings.getGameMode(),
         });
 
@@ -191,6 +198,8 @@ export class GameScreen extends Container {
         this.settingsButton.y = 30;
         this.countdown.x = centerX;
         this.countdown.y = centerY;
+        this.playButton.x = centerX;
+        this.playButton.y = height * 0.85
         this.timesUp.x = centerX;
         this.timesUp.y = centerY;
         this.overtime.x = this.gameContainer.x;

@@ -72,6 +72,9 @@ async function init() {
         backgroundColor: 0xffffff,
     });
 
+    /** @ts-ignore*/
+    globalThis.__PIXI_APP__ = app;
+
     // Add pixi canvas element (app.canvas) to the document's body
     document.body.appendChild(app.canvas);
     document.getElementsByTagName("body")[0].classList.add("desktop");

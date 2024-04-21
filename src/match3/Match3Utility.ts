@@ -1,3 +1,5 @@
+import { SlotGrid } from "../slot/SlotUtility";
+
 /** Piece type on each position in the grid */
 export type Match3Type = number;
 
@@ -416,4 +418,19 @@ export function match3PositionToString(position: Match3Position) {
 export function match3StringToPosition(str: string) {
     const split = str.split(':');
     return { row: Number(split[0]), column: Number(split[1]) };
+}
+export function slotGetGridPiecesPosition(grid: SlotGrid){
+    const positions: Match3Position[] = [];
+    
+    for (let i = 0; i < grid.length; i++) {
+        for (let j = 0; j < grid[i].length; j++) {
+            const element = grid[i][j];
+            if(element){
+                const position = { row: i, column: j } as Match3Position
+                positions.push(position)
+            }
+        }
+    }
+
+    return positions
 }
